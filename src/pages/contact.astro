@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Contact from '../components/Contact.astro';
+import { site } from '../config/site';
+---
+
+<BaseLayout title="Contact" description={`Get in touch with ${site.name}.`}>
+  <div class="contact-page">
+    <Contact />
+  </div>
+</BaseLayout>
+
+<style>
+  /* The section's own top rule and padding are for the home page; on its own page it starts at the top */
+  .contact-page :global(.contact) {
+    padding-top: clamp(3rem, 2rem + 5vw, 7rem);
+  }
+
+  .contact-page :global(.contact .rule) {
+    display: none;
+  }
+
+  .contact-page :global(.contact__inner) {
+    margin-top: 0;
+  }
+</style>

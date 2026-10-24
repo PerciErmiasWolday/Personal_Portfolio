@@ -1,0 +1,70 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ResearchCard from '../../components/ResearchCard.astro';
+import { byOrder } from '../../lib/content';
+
+const research = (await getCollection('research')).sort(byOrder);
+---
+
+<BaseLayout title="Research" description="Research projects, papers, posters and slides.">
+  <header class="page-head container">
+    <p class="label">{research.length} entries</p>
+    <h1><span class="em">Research</span></h1>
+  </header>
+
+  <section class="section research" aria-label="Research list">
+    <div class="container">
+      <div class="rule" aria-hidden="true"></div>
+      <ul class="research__grid" role="list">
+        {
+          research.map((entry) => (
+            <li>
+              <ResearchCard entry={entry} headingLevel="h2" />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .research {
+    padding-top: 0;
+  }
+
+  .research__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--grid-gap);
+    margin-top: var(--space-7);
+  }
+
+  /* Each card spans eight shared rows so its parts line up with its neighbours */
+  /* No row gap: it would also open up every shared row inside the cards.
+     Stacked cards are spaced with a margin instead. */
+  .research__grid {
+    row-gap: 0;
+  }
+
+  .research__grid > li {
+    display: grid;
+    grid-row: span 8;
+    grid-template-rows: subgrid;
+    row-gap: 0;
+    margin-bottom: var(--grid-gap);
+  }
+
+  @media (max-width: 1099.98px) {
+    .research__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 699.98px) {
+    .research__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

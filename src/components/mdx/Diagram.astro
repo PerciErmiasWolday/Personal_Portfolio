@@ -1,0 +1,76 @@
+---
+/**
+ * Diagram image for MDX case studies:
+ *   <Diagram src="/media/projects/my-app/architecture.png" alt="..." caption="..." />
+ * The file goes in src/assets/media/projects/my-app/. Until it exists,
+ * a placeholder sheet shows instead. A real diagram is shown wider than the
+ * text column and links to the full-size image.
+ */
+import PrintSheet from '../PrintSheet.astro';
+import { resolveImage } from '../../lib/media';
+
+interface Props {
+  src: string;
+  alt: string;
+  caption?: string;
+}
+
+const { src, alt, caption } = Astro.props;
+const image = resolveImage(src);
+const ratio = image ? `${image.width} / ${image.height}` : '16 / 9';
+---
+
+{
+  image ? (
+    <a class="diagram diagram--wide" href={image.src} target="_blank" rel="noopener">
+      <PrintSheet
+        image={image}
+        alt={alt}
+        placeholder="ARCHITECTURE DIAGRAM, 16:9"
+        ratio={ratio}
+        captionLeft={caption}
+        captionRight="Open full size ↗"
+        sizes="(min-width: 1240px) 1100px, 94vw"
+        widths={[800, 1100, 1600, 2200]}
+      />
+      <span class="visually-hidden"> (opens the full-size diagram in a new tab)</span>
+    </a>
+  ) : (
+    <div class="diagram">
+      <PrintSheet
+        image={image}
+        alt={alt}
+        placeholder="ARCHITECTURE DIAGRAM, 16:9"
+        ratio={ratio}
+        captionLeft={caption}
+        sizes="(min-width: 1240px) 760px, 92vw"
+        widths={[640, 960, 1280, 1600]}
+      />
+    </div>
+  )
+}
+
+<style>
+  .diagram {
+    margin-block: var(--space-6);
+  }
+
+  .diagram :global(.sheet__img) {
+    object-fit: contain;
+  }
+
+  /* Wider than the text column, centred on it, so small labels stay legible */
+  .diagram--wide {
+    display: block;
+    position: relative;
+    left: 50%;
+    width: min(1100px, calc(100vw - 2 * var(--gutter)));
+    translate: -50% 0;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .diagram--wide:hover :global(.sheet__caption span:last-child) {
+    color: var(--terra-text);
+  }
+</style>

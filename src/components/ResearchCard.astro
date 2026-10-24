@@ -1,0 +1,353 @@
+---
+/**
+ * Research card. Its eight parts sit on rows shared with the neighbouring
+ * cards (CSS subgrid), so titles, chips, descriptions and links line up.
+ * Parts that are missing ("Why it matters") collapse to nothing.
+ * An optional image (e.g. a poster) shows as a small linked thumbnail in the
+ * bottom row, so other cards in the row don't get an empty image-sized gap.
+ */
+import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import { researchDocs, resolveImage } from '../lib/media';
+
+interface Props {
+  entry: CollectionEntry<'research'>;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { entry, headingLevel: H = 'h3' } = Astro.props;
+const r = entry.data;
+const docs = researchDocs(r);
+const image = resolveImage(r.image);
+const href = `/research/${r.slug}/`;
+const titleId = `research-${r.slug}-title`;
+const hasNumber = (s: string) => /\d/.test(s);
+
+// Only resources that really exist get a button.
+const links = [
+  r.publicationUrl && { label: 'View published paper', href: r.publicationUrl, external: true },
+  docs.paper && { label: 'View paper', href: docs.paper },
+  docs.poster && { label: 'View poster', href: docs.poster },
+  docs.slides && { label: 'View slides', href: docs.slides },
+].filter(Boolean) as { label: string; href: string; external?: boolean }[];
+---
+
+<article class="rcard" aria-labelledby={titleId}>
+  <div class="rcard__head">
+    <span class="label">{r.typeLabel ?? r.type}</span>
+    {r.years && <span class="label rcard__years">{r.years}</span>}
+  </div>
+
+  <H class="rcard__title" id={titleId}>
+    <a class="rcard__link" href={href}>{r.title}</a>
+  </H>
+
+  <div class="rcard__where">
+    <p class="rcard__inst">{r.institution}</p>
+    {r.advisor && <p class="rcard__advisor">Advisor: {r.advisor}</p>}
+  </div>
+
+  <ul class="rcard__chips" role="list" aria-label="Topics">
+    {r.topics.map((t) => <li class:list={['rchip', hasNumber(t) && 'rchip--metric']}>{t}</li>)}
+  </ul>
+
+  <p class="rcard__summary">{r.summary}</p>
+
+  {
+    r.whyItMatters && (
+      <details class="rcard__why">
+        <summary class="label">Why it matters</summary>
+        <p>{r.whyItMatters}</p>
+      </details>
+    )
+  }
+
+  <div class="rcard__links">
+    {
+      image && (
+        <a class="rcard__thumb" href={docs.poster ?? docs.paper ?? href}>
+          <Image src={image} alt={r.imageAlt ?? ''} width={160} densities={[1, 2]} />
+        </a>
+      )
+    }
+    {
+      links.map((l) => (
+        <a class="rcard__btn" href={l.href} {...(l.external ? { target: '_blank', rel: 'noopener' } : {})}>
+          {l.label}
+          {l.external && <span class="visually-hidden"> (opens in a new tab)</span>}
+        </a>
+      ))
+    }
+    <span class="label rcard__more" aria-hidden="true">Details <span class="rcard__arrow">&rarr;</span></span>
+  </div>
+</article>
+
+<style>
+  /* Eight shared rows. Spacing comes from margins, so empty rows take no space. */
+  .rcard {
+    position: relative;
+    display: grid;
+    grid-row: span 8;
+    grid-template-rows: subgrid;
+    row-gap: 0;
+    padding: 1.375rem;
+    background-color: var(--card-rest);
+    border: 1px solid var(--rule-strong);
+    border-radius: 14px;
+    cursor: pointer;
+    transition:
+      border-color var(--quick),
+      box-shadow var(--quick),
+      transform var(--quick);
+  }
+
+  .rcard__link {
+    transition: color var(--quick);
+  }
+
+  /* The whole card opens the research page */
+  .rcard__link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+  }
+
+  .rcard__link:focus-visible {
+    outline: none;
+  }
+
+  /* Controls inside the card keep working on their own */
+  .rcard__why,
+  .rcard__thumb,
+  .rcard__btn {
+    position: relative;
+    z-index: 2;
+  }
+
+  .rcard__arrow {
+    display: inline-block;
+    transition: transform var(--fade);
+  }
+
+  /* ---- Hover and keyboard focus: a light lift, not a fill (the fill is for projects) ---- */
+  .rcard:hover,
+  .rcard:focus-within {
+    border-color: var(--terra);
+    box-shadow: 0 2px 2px rgba(42, 36, 32, 0.05), 0 14px 28px -14px rgba(42, 36, 32, 0.28);
+    transform: translateY(-3px);
+  }
+
+  .rcard:focus-within {
+    outline: 2px solid var(--terra);
+    outline-offset: 3px;
+  }
+
+  .rcard:is(:hover, :focus-within) .rcard__link {
+    color: var(--terra-text);
+  }
+
+  .rcard:is(:hover, :focus-within) .rcard__arrow {
+    transform: translateX(5px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rcard:hover,
+    .rcard:focus-within,
+    .rcard:is(:hover, :focus-within) .rcard__arrow {
+      transform: none;
+    }
+  }
+
+  /* The date moves under the category when the card is too narrow for both */
+  .rcard__head {
+    grid-row: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.15rem var(--space-3);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .rcard__years {
+    white-space: nowrap;
+    color: var(--ink);
+  }
+
+  .rcard__title {
+    grid-row: 2;
+    margin-top: 0.875rem;
+    font-size: var(--fs-h4);
+    font-weight: 400;
+    line-height: 1.2;
+  }
+
+  .rcard__title a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .rcard__title a:hover {
+    color: var(--terra-text);
+  }
+
+  .rcard__where {
+    grid-row: 3;
+    margin-top: var(--space-1);
+  }
+
+  .rcard__inst {
+    font-size: var(--fs-small);
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--terra-text);
+  }
+
+  .rcard__advisor {
+    margin-top: 0.15rem;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+
+  .rcard__chips {
+    grid-row: 5;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: start;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+  }
+
+  .rchip {
+    padding: 6px 10px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+
+  .rchip--metric {
+    background: rgba(180, 85, 47, 0.12);
+    border-color: rgba(142, 63, 33, 0.22);
+    color: var(--terra-deep);
+  }
+
+  .rcard__summary {
+    grid-row: 6;
+    margin-top: var(--space-3);
+    font-size: var(--fs-small);
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+
+  .rcard__why {
+    grid-row: 7;
+    align-self: start;
+    margin-top: var(--space-3);
+    border-top: 1px solid var(--rule);
+  }
+
+  .rcard__why summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: var(--space-2);
+    color: var(--ink);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .rcard__why summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .rcard__why summary::after {
+    content: '+';
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--terra);
+  }
+
+  .rcard__why[open] summary::after {
+    content: '\2212';
+  }
+
+  .rcard__why p {
+    padding-top: var(--space-2);
+    font-size: var(--fs-small);
+    color: var(--ink-2);
+  }
+
+  /* Bottom row, shared by all cards: fills the row so the divider lines up */
+  .rcard__links {
+    grid-row: 8;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--rule);
+  }
+
+  /* Small preview of the poster or paper, linked to the full file */
+  .rcard__thumb {
+    display: block;
+    flex: none;
+    width: 4.5rem;
+    border: 1px solid var(--rule-strong);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: border-color var(--quick);
+  }
+
+  .rcard__thumb:hover {
+    border-color: var(--terra);
+  }
+
+  .rcard__thumb img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .rcard__btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--ink);
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+    text-decoration: none;
+    transition:
+      background-color var(--quick),
+      border-color var(--quick),
+      color var(--quick);
+  }
+
+  .rcard__btn:hover {
+    background: var(--terra);
+    border-color: var(--terra);
+    color: var(--paper);
+  }
+
+  .rcard__more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--terra-text);
+    white-space: nowrap;
+    margin-left: auto;
+    min-height: 2rem;
+  }
+</style>

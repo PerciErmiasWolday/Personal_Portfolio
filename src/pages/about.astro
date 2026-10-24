@@ -1,0 +1,260 @@
+---
+import { getCollection } from 'astro:content';
+import { site } from '../config/site';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PrintSheet from '../components/PrintSheet.astro';
+import Section from '../components/Section.astro';
+import Education from '../components/Education.astro';
+import { Image } from 'astro:assets';
+import { Content as Story } from '../content/about/story.mdx';
+import { byOrder } from '../lib/content';
+import { resolveImage } from '../lib/media';
+
+const experience = (await getCollection('experience')).sort(byOrder).filter((e) => e.data.about);
+const photo = resolveImage(site.photo);
+const beyond = site.beyond.map((b) => ({ ...b, img: resolveImage(b.image) }));
+---
+
+<BaseLayout title="About" description={`About ${site.name}: story, interests beyond the classroom, experience and education.`}>
+  <div class="container grid-12 about-head">
+    <div class="about-head__text">
+      <header class="page-head">
+        <p class="label">About</p>
+        <h1>My <span class="em">story</span></h1>
+      </header>
+      <div class="prose story">
+        <Story />
+      </div>
+    </div>
+
+    <div class="about-head__photo">
+      <PrintSheet
+        image={photo}
+        alt={site.photoAlt}
+        placeholder="YOUR PHOTO, 4:5"
+        ratio={photo ? `${photo.width} / ${photo.height}` /* the photo's own shape, so nothing is cut off */ : '4 / 5'}
+        tilt="right"
+        loading="eager"
+        sizes="(min-width: 1240px) 480px, (min-width: 900px) 38vw, 92vw"
+        widths={[480, 720, 960, 1400]}
+      />
+    </div>
+  </div>
+
+  <Section id="beyond" title="Beyond the classroom">
+    <ul class="beyond" role="list">
+      {
+        beyond.map((b, i) => (
+          <li class="beyond__card">
+            {b.img && (
+              <Image class="beyond__img" src={b.img} alt={b.imageAlt ?? ''} widths={[400, 640, 800]} sizes="(min-width: 1100px) 380px, (min-width: 860px) 30vw, 92vw" />
+            )}
+            <p class="label beyond__num">{String(i + 1).padStart(2, '0')}</p>
+            <h3 class="beyond__title">{b.title}</h3>
+            <p class="beyond__text">{b.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <Section id="experience" title="Experience">
+    <ol class="tl" role="list">
+      {
+        experience.map(({ data: e }) => (
+          <li class="tl__item">
+            <p class="label tl__date">{e.about!.date}</p>
+            <div class="tl__body">
+              <h3 class="tl__role">{e.role}</h3>
+              <p class="tl__org">
+                {e.organization}
+                {e.about!.place && <> · {e.about!.place}</>}
+              </p>
+              <p class="tl__line">{e.about!.line}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </Section>
+
+  <Section id="education" title="Education">
+    <Education />
+  </Section>
+</BaseLayout>
+
+<style>
+  .about-head {
+    padding-bottom: var(--section-pad);
+    row-gap: var(--space-7);
+  }
+
+  .about-head__text {
+    grid-column: 1 / span 7;
+  }
+
+  .about-head__text .page-head {
+    padding-bottom: var(--space-7);
+  }
+
+  .about-head__photo {
+    grid-column: 8 / span 5;
+    padding-top: clamp(3rem, 2rem + 4vw, 6rem);
+  }
+
+  /* Comfortable long-form reading */
+  .story {
+    font-size: var(--fs-lead);
+    max-width: 62ch;
+  }
+
+  /* ---- Beyond the classroom ---- */
+  .beyond {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--grid-gap);
+  }
+
+  .beyond__card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.375rem;
+    background-color: var(--card-rest);
+    border: 1px solid var(--rule-strong);
+    border-radius: 14px;
+  }
+
+  .beyond__card :global(.beyond__img) {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    margin-bottom: var(--space-4);
+    border-radius: 8px;
+  }
+
+  .beyond__num {
+    color: var(--terra-text);
+  }
+
+  .beyond__title {
+    margin-top: var(--space-2);
+    font-size: var(--fs-h4);
+    font-weight: 400;
+  }
+
+  .beyond__text {
+    margin-top: var(--space-3);
+    font-size: var(--fs-small);
+    line-height: 1.65;
+    color: var(--ink-2);
+  }
+
+  /* ---- Compact vertical timeline ---- */
+  .tl {
+    position: relative;
+    max-width: 52rem;
+  }
+
+  .tl__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 8rem minmax(0, 1fr);
+    gap: var(--space-5);
+    padding-bottom: var(--space-6);
+  }
+
+  .tl__item:last-child {
+    padding-bottom: 0;
+  }
+
+  /* The line and dots run between the date and the role */
+  .tl__body {
+    position: relative;
+    padding-left: var(--space-5);
+    border-left: 1px solid var(--rule-strong);
+  }
+
+  .tl__item:last-child .tl__body {
+    border-left-color: transparent;
+  }
+
+  .tl__body::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 0.45em;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--terra);
+  }
+
+  .tl__date {
+    padding-top: 0.3em;
+    text-align: right;
+    color: var(--ink);
+  }
+
+  .tl__role {
+    font-size: var(--fs-h4);
+    font-weight: 400;
+    line-height: 1.25;
+  }
+
+  .tl__org {
+    margin-top: var(--space-1);
+    font-size: var(--fs-small);
+    font-weight: 500;
+    color: var(--terra-text);
+  }
+
+  .tl__line {
+    margin-top: var(--space-1);
+    font-size: var(--fs-small);
+    color: var(--ink-2);
+  }
+
+  @media (min-width: 900px) {
+    .about-head__photo :global(.sheet) {
+      position: sticky;
+      top: calc(var(--header-h) + var(--space-6));
+    }
+  }
+
+  @media (max-width: 859.98px) {
+    .beyond {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .tl__item {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-1);
+    }
+
+    .tl__date {
+      text-align: left;
+      padding-left: var(--space-5);
+    }
+
+    .tl__item .tl__body {
+      border-left-color: var(--rule-strong);
+    }
+  }
+
+  @media (max-width: 899.98px) {
+    .about-head__text,
+    .about-head__photo {
+      grid-column: 1 / -1;
+    }
+
+    .about-head__photo {
+      order: -1;
+      width: min(100%, 26rem);
+      padding-top: var(--space-7);
+    }
+
+    .about-head__text .page-head {
+      padding-top: 0;
+    }
+  }
+</style>

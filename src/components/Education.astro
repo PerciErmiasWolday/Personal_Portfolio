@@ -1,0 +1,64 @@
+---
+import { site } from '../config/site';
+---
+
+<ol class="education" role="list">
+  {
+    site.education.map((e) => (
+      <li class="education__row">
+        <p class="label education__years">{e.years}</p>
+        <div class="education__body">
+          <h3>{e.school}</h3>
+          <p class="education__school">{e.degree}</p>
+          {e.detail && <p class="soft education__detail">{e.detail}</p>}
+        </div>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .education {
+    border-top: 1px solid var(--rule);
+  }
+
+  .education__row {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--grid-gap);
+    row-gap: var(--space-2);
+    padding-block: var(--space-5);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .education__years {
+    grid-column: 1 / span 3;
+    padding-top: 0.35em;
+  }
+
+  .education__body {
+    grid-column: 4 / -1;
+  }
+
+  .education h3 {
+    font-size: var(--fs-h4);
+  }
+
+  .education__school {
+    margin-top: var(--space-1);
+    color: var(--terra-text);
+    font-size: var(--fs-small);
+  }
+
+  .education__detail {
+    margin-top: var(--space-2);
+    font-size: var(--fs-small);
+  }
+
+  @media (max-width: 767.98px) {
+    .education__years,
+    .education__body {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

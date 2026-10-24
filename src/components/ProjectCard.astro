@@ -1,0 +1,310 @@
+---
+/**
+ * Compact project card, same family as the experience and research cards.
+ * Its parts sit on rows shared with the neighbouring cards (CSS subgrid), so
+ * titles, chips, descriptions and links line up. The print-sheet image only
+ * appears once a real screenshot exists, so there are no empty frames.
+ * Hover and keyboard focus fill the card with terracotta.
+ */
+import type { CollectionEntry } from 'astro:content';
+import PrintSheet from './PrintSheet.astro';
+import { resolveImage, resolveVideo } from '../lib/media';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  /** Position in the grid; alternates the sheet tilt. */
+  index?: number;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { project, index = 0, headingLevel: H = 'h3' } = Astro.props;
+const p = project.data;
+const href = `/projects/${p.slug}/`;
+const cover = resolveImage(p.cover);
+const titleId = `project-${p.slug}-title`;
+const hasDemo = Boolean(resolveVideo(p.video, `/media/projects/${p.slug}`, 'demo.mp4'));
+// Results like "30/30 …" or "94% …" get the tint; "3-person team" does not.
+const isResult = (s: string) => /\d+\s*(%|\/\s*\d+)/.test(s);
+---
+
+<article class="pcard" aria-labelledby={titleId}>
+  <div class="pcard__head">
+    <span class="label">{p.category}</span>
+    <span class="label pcard__year">{p.year}</span>
+  </div>
+
+  {
+    cover && (
+      <PrintSheet
+        class="pcard__sheet"
+        image={cover}
+        alt={p.coverAlt ?? ''}
+        placeholder="PROJECT COVER, 16:9"
+        ratio="16 / 9"
+        tilt={index % 2 === 0 ? 'left' : 'right'}
+        sizes="(min-width: 1240px) 360px, (min-width: 860px) 30vw, 92vw"
+        widths={[400, 640, 800]}
+      />
+    )
+  }
+
+  <H class="pcard__title" id={titleId}>
+    <a class="pcard__link" href={href}>{p.title}</a>
+  </H>
+
+  {p.topics.length > 0 && <p class="pcard__topics">{p.topics.join(' · ')}</p>}
+
+  <ul class="pcard__chips" role="list" aria-label="Highlights">
+    {p.metrics.map((m) => <li class:list={['pchip', isResult(m) && 'pchip--metric']}>{m}</li>)}
+  </ul>
+
+  <p class="pcard__desc">{p.summary}</p>
+
+  <ul class="chips pcard__stack" role="list" aria-label="Technologies">
+    {p.stack.map((s) => <li class="chip">{s}</li>)}
+  </ul>
+
+  <div class="pcard__links">
+    {
+      hasDemo && (
+        <a class="pcard__btn" href={`${href}#demo`}>
+          Watch demo<span class="visually-hidden"> of {p.title}</span>
+        </a>
+      )
+    }
+    {
+      p.liveUrl && (
+        <a class="pcard__btn" href={p.liveUrl} target="_blank" rel="noopener">
+          Live demo<span class="visually-hidden"> for {p.title} (opens in a new tab)</span>
+        </a>
+      )
+    }
+    {
+      p.codeUrl && (
+        <a class="pcard__btn" href={p.codeUrl} target="_blank" rel="noopener">
+          View code<span class="visually-hidden"> for {p.title} (opens in a new tab)</span>
+        </a>
+      )
+    }
+    <span class="pcard__view label" aria-hidden="true">Case study <span class="pcard__arrow">&rarr;</span></span>
+  </div>
+</article>
+
+<style>
+  /* Eight shared rows. Spacing comes from margins, so empty rows take no space. */
+  .pcard {
+    position: relative;
+    display: grid;
+    grid-row: span 8;
+    grid-template-rows: subgrid;
+    row-gap: 0;
+    padding: 1.375rem;
+    background-color: var(--card-rest);
+    border: 1px solid var(--rule-strong);
+    border-radius: 14px;
+    color: var(--ink);
+    transition:
+      background-color var(--fade),
+      border-color var(--fade),
+      color var(--fade);
+  }
+
+  /* Every colored piece fades with the card, never slides */
+  .pcard :is(.label, .pcard__link, .pcard__topics, .pcard__desc, .pchip, .chip, .pcard__btn, .pcard__view),
+  .pcard__head,
+  .pcard__stack,
+  .pcard__links {
+    transition:
+      color var(--fade),
+      border-color var(--fade),
+      background-color var(--fade);
+  }
+
+  .pcard__head {
+    grid-row: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.15rem var(--space-3);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .pcard__year {
+    white-space: nowrap;
+    color: var(--ink);
+  }
+
+  .pcard :global(.pcard__sheet) {
+    grid-row: 2;
+    margin-top: var(--space-4);
+  }
+
+  .pcard__title {
+    grid-row: 3;
+    margin-top: 0.875rem;
+    font-size: var(--fs-h4);
+    font-weight: 400;
+    line-height: 1.2;
+  }
+
+  .pcard__link,
+  .pcard__link:hover {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* The whole card is the link's hit area */
+  .pcard__link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .pcard__link:focus-visible {
+    outline: none;
+  }
+
+  .pcard__topics {
+    grid-row: 4;
+    margin-top: var(--space-1);
+    font-size: var(--fs-small);
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--terra-text);
+  }
+
+  .pcard__chips {
+    grid-row: 5;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: start;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+  }
+
+  .pchip {
+    padding: 6px 10px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+
+  .pchip--metric {
+    background: rgba(180, 85, 47, 0.12);
+    border-color: rgba(142, 63, 33, 0.22);
+    color: var(--terra-deep);
+  }
+
+  .pcard__desc {
+    grid-row: 6;
+    margin-top: var(--space-3);
+    font-size: var(--fs-small);
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+
+  /* Tech fills the shared row so its divider lines up across cards */
+  .pcard__stack {
+    grid-row: 7;
+    align-content: flex-start;
+    margin-top: var(--space-4);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--rule);
+  }
+
+  .pcard__stack .chip {
+    font-size: 0.68rem;
+    color: var(--ink-soft);
+  }
+
+  .pcard__links {
+    grid-row: 8;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+  }
+
+  /* Real links sit above the stretched card link */
+  .pcard__btn {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--ink);
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .pcard__view {
+    margin-left: auto;
+    min-height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--terra-text);
+    white-space: nowrap;
+  }
+
+  .pcard__arrow {
+    display: inline-block;
+    transition: transform var(--fade);
+  }
+
+  /* ---- Hover and keyboard focus: an even terracotta fade ---- */
+  .pcard:hover,
+  .pcard:focus-within {
+    background-color: var(--terra);
+    border-color: var(--terra);
+    color: var(--on-terra);
+  }
+
+  .pcard:focus-within {
+    outline: 2px solid var(--terra);
+    outline-offset: 3px;
+  }
+
+  .pcard:is(:hover, :focus-within) :is(.label, .pcard__year, .pcard__topics, .pcard__desc, .pchip, .chip, .pcard__btn, .pcard__view) {
+    color: var(--on-terra);
+  }
+
+  .pcard:is(:hover, :focus-within) :is(.pchip, .chip, .pcard__btn) {
+    background: transparent;
+    border-color: rgba(251, 248, 242, 0.55);
+  }
+
+  .pcard:is(:hover, :focus-within) :is(.pcard__head, .pcard__stack) {
+    border-color: rgba(251, 248, 242, 0.45);
+  }
+
+  .pcard:is(:hover, :focus-within) .pcard__arrow {
+    transform: translateX(5px);
+  }
+
+  /* The sheet straightens and lifts */
+  .pcard:is(:hover, :focus-within) :global(.pcard__sheet) {
+    transform: translateY(-4px) rotate(0deg);
+    box-shadow: var(--shadow-sheet-lift);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pcard:is(:hover, :focus-within) .pcard__arrow,
+    .pcard:is(:hover, :focus-within) :global(.pcard__sheet) {
+      transform: none;
+    }
+  }
+</style>

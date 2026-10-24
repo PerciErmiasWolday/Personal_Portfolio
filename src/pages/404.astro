@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Page not found" noindex>
+  <section class="container not-found" aria-labelledby="nf-title">
+    <p class="label">Error 404</p>
+    <h1 id="nf-title">This page is <span class="em">missing</span>.</h1>
+    <p class="lead">The link may be old, or the page may have moved.</p>
+    <p class="not-found__actions">
+      <a class="btn btn--primary" href="/">Back to home</a>
+      <a class="btn btn--secondary" href="/projects/">See projects</a>
+    </p>
+  </section>
+</BaseLayout>
+
+<style>
+  .not-found {
+    padding-block: clamp(4rem, 3rem + 6vw, 9rem);
+  }
+
+  .not-found h1 {
+    margin-top: var(--space-4);
+    font-size: var(--fs-display);
+  }
+
+  .not-found .lead {
+    margin-top: var(--space-5);
+  }
+
+  .not-found__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+  }
+</style>

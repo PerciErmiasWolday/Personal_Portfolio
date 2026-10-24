@@ -1,0 +1,103 @@
+---
+/**
+ * Demo or presentation video. A self-hosted MP4 plays inline; a YouTube or
+ * Loom link shows as a poster card that opens in a new tab. With neither,
+ * a placeholder sheet.
+ */
+import { getImage } from 'astro:assets';
+import PrintSheet from './PrintSheet.astro';
+import { resolveVideo, type Video } from '../lib/media';
+
+interface Props {
+  video?: Video;
+  /** Folder in public/ to look in, e.g. "/media/projects/my-app" */
+  folder: string;
+  /** Conventional file name, e.g. "demo.mp4" */
+  fileName: string;
+  /** What the video shows, for labels, e.g. "Project One demo" */
+  title: string;
+  placeholder: string;
+}
+
+const { video, folder, fileName, title, placeholder } = Astro.props;
+const v = resolveVideo(video, folder, fileName);
+
+let poster = v?.posterUrl;
+if (v?.type === 'file' && v.posterImage) {
+  poster = (await getImage({ src: v.posterImage, width: 1600, format: 'webp' })).src;
+}
+
+const host = v?.type === 'youtube' ? 'YouTube' : v?.type === 'loom' ? 'Loom' : undefined;
+---
+
+<div class="video" id="demo">
+  {
+    v?.type === 'file' ? (
+      <PrintSheet placeholder="" ratio="16 / 9" grain={false}>
+        <video controls preload="none" playsinline muted poster={poster} aria-label={title}>
+          <source src={v.src} type="video/mp4" />
+          {v.captions && <track kind="captions" src={v.captions} srclang="en" label="English" default />}
+          <a href={v.src}>Download the video</a>
+        </video>
+      </PrintSheet>
+    ) : v && host ? (
+      <a class="video__link" href={v.src} target="_blank" rel="noopener">
+        <PrintSheet
+          image={v.posterImage}
+          alt=""
+          placeholder={`VIDEO ON ${host.toUpperCase()}, 16:9`}
+          ratio="16 / 9"
+          captionLeft={title}
+          captionRight={host}
+        />
+        <span class="video__cta label">
+          Watch on {host} <span aria-hidden="true">&nearr;</span>
+          <span class="visually-hidden"> (opens in a new tab)</span>
+        </span>
+      </a>
+    ) : (
+      <PrintSheet placeholder={placeholder} ratio="16 / 9" />
+    )
+  }
+</div>
+
+<style>
+  .video :global(video) {
+    background: var(--linen);
+  }
+
+  .video__link {
+    display: block;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .video__link :global(.sheet) {
+    transition:
+      transform var(--fade),
+      box-shadow var(--fade);
+  }
+
+  .video__link:hover :global(.sheet),
+  .video__link:focus-visible :global(.sheet) {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-sheet-lift);
+  }
+
+  .video__cta {
+    display: inline-block;
+    margin-top: var(--space-4);
+    color: var(--terra-text);
+  }
+
+  .video__link:hover .video__cta {
+    color: var(--ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .video__link:hover :global(.sheet),
+    .video__link:focus-visible :global(.sheet) {
+      transform: none;
+    }
+  }
+</style>

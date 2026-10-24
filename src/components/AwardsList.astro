@@ -1,0 +1,62 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  items: CollectionEntry<'awards'>[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="awards">
+  <ul class="awards__list" role="list">
+    {
+      items.map(({ data: a }) => (
+        <li class="awards__row">
+          <div>
+            <p class="awards__title">{a.title}</p>
+            {a.issuer && <p class="awards__issuer">{a.issuer}</p>}
+          </div>
+          {a.year && <p class="label">{a.year}</p>}
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .awards {
+    padding: var(--space-2) clamp(1.25rem, 0.9rem + 1.2vw, 2rem);
+    background: var(--paper);
+    border: 1px solid var(--rule-strong);
+  }
+
+  .awards__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-5);
+    padding-block: 0.9rem;
+  }
+
+  .awards__row + .awards__row {
+    border-top: 1px solid var(--rule);
+  }
+
+  .awards__title {
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .awards__issuer {
+    margin-top: 0.1rem;
+    font-size: var(--fs-small);
+    color: var(--ink-soft);
+  }
+
+  .awards__row .label {
+    flex: none;
+    white-space: nowrap;
+    color: var(--ink);
+  }
+</style>

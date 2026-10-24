@@ -1,0 +1,296 @@
+---
+import { site } from '../config/site';
+import SocialIcons from './SocialIcons.astro';
+
+const path = Astro.url.pathname;
+// Experience scrolls to the home page section; the rest are pages.
+const links = [
+  { label: 'Experience', href: '/#experience', match: null },
+  { label: 'Projects', href: '/projects/', match: '/projects' },
+  { label: 'Research', href: '/research/', match: '/research' },
+  { label: 'About', href: '/about/', match: '/about' },
+  { label: 'Contact', href: '/contact/', match: '/contact' },
+];
+---
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="wordmark" href="/" aria-label={`${site.name}, home`}>
+      {site.firstName} <em>{site.lastName}</em>
+    </a>
+
+    <button
+      class="menu-btn"
+      type="button"
+      aria-expanded="false"
+      aria-controls="site-nav"
+      hidden
+    >
+      <span class="menu-btn__label">Menu</span>
+      <span class="menu-btn__icon" aria-hidden="true"></span>
+    </button>
+
+    <nav id="site-nav" class="site-nav" aria-label="Main">
+      <ul class="site-nav__links" role="list">
+        {
+          links.map((l) => {
+            const current = l.match !== null && path.startsWith(l.match);
+            return (
+              <li>
+                <a href={l.href} aria-current={current ? 'page' : undefined}>
+                  {l.label}
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+      <div class="site-nav__end">
+        <SocialIcons />
+        <a class="btn btn--secondary resume-btn" href={site.resumePdf} target="_blank" rel="noopener">
+          Resume<span class="visually-hidden"> (PDF, opens in a new tab)</span>
+        </a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('.menu-btn');
+  const nav = document.getElementById('site-nav');
+
+  if (btn && nav) {
+    btn.hidden = false;
+    document.documentElement.classList.add('has-menu-js');
+
+    const setOpen = (open: boolean) => {
+      btn.setAttribute('aria-expanded', String(open));
+      nav.toggleAttribute('data-open', open);
+    };
+
+    btn.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'));
+
+    // Close after following a link, on Escape, and when resizing to desktop.
+    nav.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) setOpen(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true') {
+        setOpen(false);
+        btn.focus();
+      }
+    });
+    matchMedia('(min-width: 900px)').addEventListener('change', (e) => {
+      if (e.matches) setOpen(false);
+    });
+  }
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background-color: var(--linen);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .site-header__inner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5);
+    min-height: var(--header-h);
+  }
+
+  .wordmark {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    color: var(--ink);
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  .wordmark em {
+    font-style: italic;
+    color: var(--terra);
+  }
+
+  .wordmark:hover {
+    color: var(--ink);
+  }
+
+  .site-nav,
+  .site-nav__links,
+  .site-nav__end {
+    display: flex;
+    align-items: center;
+  }
+
+  .site-nav {
+    gap: var(--space-6);
+  }
+
+  .site-nav__links {
+    gap: var(--space-5);
+    margin: 0;
+  }
+
+  .site-nav__end {
+    gap: var(--space-4);
+  }
+
+  .site-nav__links a {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    text-decoration: none;
+    padding-block: var(--space-2);
+  }
+
+  .site-nav__links a:hover,
+  .site-nav__links a[aria-current='page'] {
+    color: var(--terra-text);
+  }
+
+  .site-nav__links a[aria-current='page'] {
+    text-decoration: underline;
+    text-decoration-color: var(--terra);
+    text-underline-offset: 0.45em;
+  }
+
+  .resume-btn {
+    min-height: 2.25rem;
+    padding: 0.45rem 0.95rem;
+  }
+
+  .resume-btn[aria-current='page'] {
+    border-color: var(--terra);
+    color: var(--terra-text);
+  }
+
+  .resume-btn[aria-current='page']:hover {
+    color: var(--paper);
+  }
+
+  .menu-btn {
+    display: none;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 2.75rem;
+    padding: 0 var(--space-3);
+    margin-right: calc(var(--space-3) * -1);
+    background: none;
+    border: 0;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+  }
+
+  .menu-btn__icon,
+  .menu-btn__icon::before {
+    display: block;
+    width: 18px;
+    height: 1px;
+    background: currentColor;
+    transition: transform var(--quick);
+  }
+
+  .menu-btn__icon {
+    position: relative;
+    translate: 0 -3px;
+  }
+
+  .menu-btn__icon::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+  }
+
+  .menu-btn[aria-expanded='true'] .menu-btn__icon {
+    translate: 0 0;
+    transform: rotate(45deg);
+  }
+
+  .menu-btn[aria-expanded='true'] .menu-btn__icon::before {
+    top: 0;
+    transform: rotate(-90deg);
+  }
+
+  @media (max-width: 899.98px) {
+    /* Without JS the links simply wrap below the wordmark. */
+    .site-header__inner {
+      flex-wrap: wrap;
+      row-gap: 0;
+    }
+
+    .site-nav {
+      flex-basis: 100%;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding-bottom: var(--space-3);
+    }
+
+    :global(.has-menu-js) .menu-btn {
+      display: inline-flex;
+    }
+
+    :global(.has-menu-js) .site-header__inner {
+      flex-wrap: nowrap;
+    }
+
+    /* Full-width dropdown panel, solid linen so nothing shows through */
+    :global(.has-menu-js) .site-nav {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      margin-top: 1px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding: var(--space-2) var(--gutter) var(--space-5);
+      background-color: var(--linen);
+      border-bottom: 1px solid var(--rule);
+      box-shadow: 0 12px 24px -16px rgba(42, 36, 32, 0.25);
+    }
+
+    :global(.has-menu-js) .site-nav[data-open] {
+      display: flex;
+    }
+
+    :global(.has-menu-js) .site-nav__links {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    :global(.has-menu-js) .site-nav__links li {
+      border-bottom: 1px solid var(--rule);
+    }
+
+    :global(.has-menu-js) .site-nav__links a {
+      display: block;
+      padding-block: var(--space-4);
+      font-size: 0.85rem;
+    }
+
+    :global(.has-menu-js) .site-nav__end {
+      justify-content: space-between;
+      padding-top: var(--space-4);
+    }
+  }
+</style>

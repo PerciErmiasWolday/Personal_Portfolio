@@ -1,0 +1,80 @@
+---
+title: "ReadingBridge"
+slug: "project-one"
+category: "AI-Assisted Reading Companion"
+year: 2026
+topics: ["Accessible Technology", "NLP", "Human-Centered Design"]
+summary: "Reading with my autistic cousin made me realize that understanding the words in a story isn't always the same as understanding what they mean. I built ReadingBridge to offer explanations only when readers ask, with each answer supported by evidence from the story. In 30 evaluation cases, all passed the first-pass grounding checks, but only 25 correctly identified whether the text provided enough information to answer. Ambiguous pronouns were a recurring problem, which became a priority for further testing."
+role: "Creator, Designer & Developer"
+team: "Solo project"
+metrics: ["30/30 grounding checks passed", "25/30 correct answerability decisions"]
+stack: ["React", "TypeScript", "FastAPI", "OpenAI API", "Python"]
+featured: true
+order: 2
+# Add a screenshot at src/assets/media/projects/project-one/cover.jpg (1600 x 900) to show it on the card.
+cover: "/media/projects/project-one/cover.jpg"
+coverAlt: "Screenshot of ReadingBridge"
+# liveUrl: "https://..."   # shows a Live demo button
+codeUrl: "https://github.com/PerciErmiasWolday/ReadingBridge"
+overview:
+  - "Reading with my autistic cousin made me realize that understanding the words in a story isn't always the same as understanding what they imply. I built ReadingBridge so readers could ask for help without constantly interrupting the story, with every explanation supported by evidence from the text."
+  - "I evaluated the prototype on 30 cases. All 30 passed the first-pass evidence-grounding checks, but the model correctly determined whether the text supported an answer in only 25 cases. Those failures, especially with ambiguous pronouns, showed me where the system still needed work."
+# Screenshots are stills from the demo recording (4:30, 5:56).
+gallery:
+  - "/media/projects/project-one/gallery-2.jpg"
+  - "/media/projects/project-one/gallery-3.jpg"
+galleryAlt:
+  - "A highlighted sentence in The New Student with an explanation and the clue from the story beneath it"
+  - "The Bring your own reading screen with a pasted passage ready to start"
+galleryTitles:
+  - "Evidence-Based Explanation"
+  - "Bring Your Own Reading"
+galleryCaptions:
+  - "A selected sentence, its explanation, and the supporting evidence highlighted directly in the passage."
+  - "How readers add their own passages or supported text-based documents."
+
+---
+
+## Problem
+
+My cousin could read the words on a page, but sometimes the difficult part was understanding what wasn't directly stated: why someone was upset, what sarcasm meant, or who a pronoun referred to.
+
+I wanted to help with those moments without turning reading into a series of interruptions or comprehension tests.
+
+## Approach
+
+I started with one rule: reading comes first, and help appears only when requested.
+
+Readers can select a sentence to see a short explanation and the exact part of the story supporting it. I also added optional help markers, personal reading uploads, and comprehension questions.
+
+I didn't want the AI to invent explanations that sounded convincing. So I built checks that verify whether the quoted evidence actually exists in the passage, with a fallback when the response can't be validated.
+
+## Architecture
+
+I built the reading interface in React and TypeScript, with a Python/FastAPI backend handling text processing and AI requests.
+
+When a reader opens a story, the backend divides it into sections and assigns sentence IDs. When the reader requests help, the application sends the relevant context to the OpenAI API. The response goes through validation checks before the explanation and its supporting quote appear beside the selected sentence.
+
+Saved readings and progress stay in the browser.
+
+<Diagram src="/media/projects/project-one/architecture.png" alt="ReadingBridge architecture diagram. Reader inputs (built-in stories, pasted passages, uploaded .txt or PDF files) feed the React and TypeScript browser app. It sends text to a Python and FastAPI backend that prepares the text, generates help markers, requests explanations from the OpenAI API (gpt-4o-mini) and validates the quoted evidence before returning a short explanation, the supporting quote, highlighted evidence or a safe fallback. Progress is stored in the browser." caption="React Reader → FastAPI → OpenAI API → Evidence Validation → Explanation Display" />
+
+## Results
+
+I tested ReadingBridge using 30 hand-written evaluation cases covering sarcasm, implied feelings, pronouns, idioms, cause and effect, and missing information.
+
+- **30/30**: Passed first-pass evidence-grounding checks
+- **25/30**: Correctly determined whether the text provided enough information to answer
+- **11/24**: Selected the expected best supporting clue in answerable cases
+
+The results revealed an important limitation. The model could quote something from the passage and still choose the wrong evidence. It also sometimes guessed who an ambiguous pronoun referred to when the story didn't establish an answer.
+
+These results gave me a clearer direction for improving evidence selection and handling uncertainty.
+
+## What I learned
+
+The hardest part wasn't getting AI to explain a sentence. It was figuring out when that explanation could actually be trusted.
+
+I learned that making a model cite evidence is only the first step. The evidence has to be relevant, and sometimes the correct answer is simply that the story doesn't give us enough information.
+
+That's the part I'm most interested in improving next.

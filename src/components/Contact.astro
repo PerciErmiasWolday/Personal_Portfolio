@@ -1,0 +1,131 @@
+---
+import { site } from '../config/site';
+---
+
+<section id="contact" class="section contact" aria-labelledby="contact-title">
+  <div class="container">
+    <div class="rule" aria-hidden="true"></div>
+    <div class="contact__inner">
+      <p class="label">Contact</p>
+      <h2 id="contact-title" class="contact__title">
+        {site.contact.before}{' '}<span class="em">{site.contact.emphasis}</span>{site.contact.after}
+      </h2>
+      <p class="contact__note">{site.contact.note}</p>
+
+      <div class="contact__email">
+        <a class="contact__address" href={`mailto:${site.email}`} data-email>{site.email}</a>
+        <button class="btn btn--secondary contact__copy" type="button" data-copy hidden>Copy</button>
+        <span class="contact__status label" role="status" aria-live="polite" data-copy-status></span>
+      </div>
+
+      <ul class="contact__links label" role="list">
+        {
+          site.social
+            .filter((s) => s.icon === 'github' || s.icon === 'linkedin')
+            .map((s) => (
+              <li>
+                <a href={s.url} rel="me noopener" target="_blank">
+                  {s.label} <span aria-hidden="true">&nearr;</span>
+                  <span class="visually-hidden"> (opens in a new tab)</span>
+                </a>
+              </li>
+            ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-copy]');
+  const email = document.querySelector<HTMLElement>('[data-email]');
+  const status = document.querySelector<HTMLElement>('[data-copy-status]');
+
+  if (btn && email && status) {
+    btn.hidden = false;
+
+    // Fallback for browsers without the clipboard API: select the address
+    // so it can be copied by hand, and try the legacy copy command.
+    const selectFallback = () => {
+      const range = document.createRange();
+      range.selectNodeContents(email);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+      try {
+        return document.execCommand('copy');
+      } catch {
+        return false;
+      }
+    };
+
+    let timer: number | undefined;
+    btn.addEventListener('click', async () => {
+      const text = email.textContent?.trim() ?? '';
+      let copied = false;
+      try {
+        await navigator.clipboard.writeText(text);
+        copied = true;
+      } catch {
+        copied = selectFallback();
+      }
+      status.textContent = copied ? 'Copied' : 'Selected, press Ctrl+C or Cmd+C';
+      btn.textContent = copied ? 'Copied' : 'Copy';
+      clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        status.textContent = '';
+        btn.textContent = 'Copy';
+      }, 2500);
+    });
+  }
+</script>
+
+<style>
+  .contact__inner {
+    margin-top: var(--space-7);
+    max-width: 52rem;
+  }
+
+  .contact__title {
+    margin-top: var(--space-4);
+    font-size: var(--fs-display);
+    letter-spacing: -0.025em;
+    line-height: 1.04;
+  }
+
+  .contact__note {
+    margin-top: var(--space-5);
+    max-width: var(--measure);
+    color: var(--ink-soft);
+  }
+
+  .contact__email {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-4);
+    margin-top: var(--space-6);
+  }
+
+  .contact__address {
+    font-family: var(--font-mono);
+    font-size: clamp(0.95rem, 0.85rem + 0.5vw, 1.2rem);
+    overflow-wrap: anywhere;
+  }
+
+  .contact__copy {
+    min-height: 2.25rem;
+    padding: 0.45rem 0.95rem;
+  }
+
+  .contact__status {
+    color: var(--terra-text);
+  }
+
+  .contact__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    margin-top: var(--space-6);
+  }
+</style>

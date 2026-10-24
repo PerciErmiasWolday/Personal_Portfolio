@@ -1,0 +1,81 @@
+---
+title: "Correspond"
+slug: "project-four"
+category: "Interactive Research Explorer"
+year: 2026
+topics: ["Scientific Computing", "Machine Learning", "Visualization"]
+summary: "My research explored whether neural networks could predict aspects of quantum behavior using information from classical motion. But the results were mostly trapped in simulation notebooks. I built Correspond so people could change parameters and compare classical trajectories, quantum simulations, and model predictions side by side. I deployed the application with an interactive interface, turning the research into something visitors could experiment with themselves."
+role: "Creator & Full-Stack / Machine Learning Developer"
+team: "Independent project"
+metrics: ["Deployed research explorer", "Side-by-side model comparisons"]
+stack: ["Python", "FastAPI", "React", "TypeScript", "QuTiP", "PyTorch", "SciPy", "Plotly.js"]
+featured: true
+order: 3
+# Add a screenshot at src/assets/media/projects/project-four/cover.jpg (1600 x 900) to show it on the card.
+cover: "/media/projects/project-four/cover.jpg"
+coverAlt: "Screenshot of Correspond"
+# liveUrl: "https://..."   # shows a Live demo button
+codeUrl: "https://github.com/PerciErmiasWolday/Correspond"
+overview:
+  - "My research explored whether neural networks could predict aspects of quantum behavior using information from classical motion. But the results were mostly trapped in simulation notebooks. I built Correspond so people could change parameters and compare classical trajectories, quantum simulations, and model predictions side by side. It turned the research into something people could explore and question for themselves."
+# Screenshots 1 and 2 are stills from the demo recording (0:27, 1:30).
+gallery:
+  - "/media/projects/project-four/gallery-1.jpg"
+  - "/media/projects/project-four/gallery-2.jpg"
+galleryAlt:
+  - "Correspond classical laboratory: parameter controls beside live position and momentum plots for a harmonic oscillator"
+  - "Correspond AI prediction laboratory: neural network predictions of x(t) and p(t) plotted against the actual quantum expectation values"
+galleryTitles:
+  - "Classical & Quantum Laboratories"
+  - "AI Prediction Laboratory"
+galleryCaptions:
+  - "Interactive simulations showing how different parameters affect physical system behavior."
+  - "Comparisons between classical trajectories, quantum expectation values, and neural network predictions."
+
+---
+
+## Problem
+
+I was studying whether a neural network could learn the relationship between a classical system's motion and its quantum behavior. The simulations produced useful results, but comparing them meant going back and forth between notebooks, running code, and interpreting plots.
+
+I wanted a way to explore those relationships visually, including the cases where the model's predictions didn't match the actual quantum simulation.
+
+## Approach
+
+I built Correspond around three things: running real physics simulations, generating machine learning predictions, and comparing their results.
+
+I started with the harmonic oscillator, where classical and quantum behavior are expected to agree closely, then added fluxonium, a superconducting circuit where the relationship is more complicated.
+
+Instead of showing only a prediction, I designed the interface so users could change parameters and compare the classical, quantum, and neural network outputs. This also meant the model's mistakes would be visible rather than hidden.
+
+## Architecture
+
+I built the frontend with React, TypeScript, and Plotly.js for interactive controls and visualizations. It communicates with a Python/FastAPI backend that validates user inputs and routes requests to the appropriate computation modules.
+
+The backend uses SciPy and NumPy for classical simulations, QuTiP and scqubits for quantum simulations, and PyTorch for neural network predictions.
+
+I kept model training separate from the live application. Python scripts generate paired simulation data, train and evaluate the models, and save checkpoints. When someone uses the website, the backend loads those trained models for inference rather than retraining them.
+
+I also included source labels so users can distinguish live simulations, cached results, example data, and model predictions.
+
+<Diagram src="/media/projects/project-four/architecture.png" alt="Correspond system architecture diagram. A React, TypeScript and Vite frontend sends parameters and simulation settings to a Python FastAPI backend, which validates inputs and routes requests to compute modules: a classical solver (SciPy RK45, NumPy), a quantum solver (QuTiP, scqubits) and PyTorch ML inference. Results return to the browser as interactive plots comparing classical, quantum and ML predictions, with source labels. Offline CLI scripts generate paired data, prepare the dataset, train and evaluate the model, and save the checkpoint used for inference." caption="Frontend + API + Scientific Computing + Model Inference" />
+
+## Results
+
+Correspond became a working research application supporting two physical systems, interactive parameter exploration, and side-by-side comparisons of classical, quantum, and predicted behavior.
+
+The experiments also revealed important limits in what the neural network learned.
+
+- **2 physical systems**: Harmonic oscillator and fluxonium
+- **10 end-to-end user journeys**: Covered by Playwright tests
+- **Fluxonium model**: Performed within roughly 2% RMSE of a simple mean-prediction baseline, showing it had not learned a meaningfully better mapping
+
+Rather than hide the weak results, I included them in the research documentation and model evaluation. The application makes it possible to examine where the models work, where they struggle, and how their predictions compare with the underlying physics.
+
+## What I learned
+
+One of the biggest lessons was that building a working machine learning pipeline doesn't necessarily mean the model has learned something useful.
+
+The harmonic oscillator gave me a way to check that the simulations and pipeline were behaving as expected. Fluxonium was harder. Its results pushed me to look more carefully at baselines, overfitting, and whether predictions were genuinely responding to changes in the input.
+
+I also learned a lot about turning research code into software other people can interact with, from connecting the frontend and backend to handling simulation requests and making the results understandable.

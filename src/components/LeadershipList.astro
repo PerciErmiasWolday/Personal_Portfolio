@@ -1,0 +1,89 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  items: CollectionEntry<'leadership'>[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="leadership">
+  <ul class="leadership__list" role="list">
+    {
+      items.map(({ data: l }) => (
+        <li class="leadership__item">
+          <div>
+            <h3 class="leadership__role">{l.role}</h3>
+            <p class="leadership__org">{l.organization}</p>
+            {l.summary && <p class="leadership__summary">{l.summary}</p>}
+          </div>
+          {l.years && <p class="label">{l.years}</p>}
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .leadership {
+    padding: var(--space-2) clamp(1.1rem, 0.8rem + 1vw, 1.75rem);
+    background: var(--paper);
+    border: 1px solid var(--rule-strong);
+  }
+
+  /* Two columns of compact rows on wider screens */
+  .leadership__list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--grid-gap);
+  }
+
+  .leadership__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-4);
+    padding-block: var(--space-4);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  /* No line under the last row of each column */
+  .leadership__item:last-child,
+  .leadership__item:nth-last-child(2):nth-child(odd) {
+    border-bottom: 0;
+  }
+
+  .leadership__role {
+    font-size: var(--fs-body);
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: -0.005em;
+  }
+
+  .leadership__org {
+    margin-top: 0.15rem;
+    font-size: var(--fs-small);
+    color: var(--terra-text);
+  }
+
+  .leadership__summary {
+    margin-top: var(--space-1);
+    font-size: var(--fs-small);
+    color: var(--ink-2);
+  }
+
+  .leadership__item .label {
+    flex: none;
+  }
+
+  @media (max-width: 767.98px) {
+    .leadership__list {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .leadership__item:nth-last-child(2):nth-child(odd) {
+      border-bottom: 1px solid var(--rule);
+    }
+  }
+</style>

@@ -1,0 +1,118 @@
+---
+import { site } from '../config/site';
+import PrintSheet from './PrintSheet.astro';
+import { resolveImage } from '../lib/media';
+
+const photo = site.showPhotoInHero ? resolveImage(site.photo) : undefined;
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="container grid-12 hero__grid">
+    <div class="hero__text">
+      <h1 id="hero-title" class="hero__title">
+        Hey, I'm <span class="em">{site.firstName}</span>.
+      </h1>
+      <p class="hero__tagline">{site.tagline}</p>
+      <ul class="chips hero__skills" role="list" aria-label="Key skills">
+        {site.keySkills.map((s) => <li class="chip">{s}</li>)}
+      </ul>
+
+      <p class="lead hero__story">{site.story}</p>
+
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="/resume/">View resume</a>
+        <a class="btn btn--secondary" href="#experience">Explore my work</a>
+      </div>
+    </div>
+
+    {/* Shown only once a photo is set in site.ts, so no empty frame on the page */}
+    {
+      photo && (
+        <div class="hero__photo">
+          <PrintSheet
+            image={photo}
+            alt={site.photoAlt}
+            placeholder="YOUR PHOTO, 4:5"
+            ratio="4 / 5"
+            tilt="right"
+            loading="eager"
+            sizes="(min-width: 1240px) 440px, (min-width: 900px) 36vw, 80vw"
+            widths={[400, 640, 880, 1200]}
+          />
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding-block: clamp(3rem, 2rem + 5vw, 7rem) 0;
+  }
+
+  .hero__grid {
+    row-gap: var(--space-8);
+    align-items: center;
+  }
+
+  .hero__text {
+    grid-column: 1 / span 7;
+  }
+
+  .hero__photo {
+    grid-column: 9 / span 4;
+  }
+
+  .hero__title {
+    font-size: var(--fs-h1);
+    font-weight: 300;
+    letter-spacing: -0.025em;
+    line-height: 1.04;
+  }
+
+  .hero__tagline {
+    margin-top: var(--space-4);
+    font-size: var(--fs-lead);
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+
+  .hero__skills {
+    margin-top: var(--space-4);
+  }
+
+  .hero__story {
+    margin-top: var(--space-5);
+    max-width: none;
+    color: var(--ink-2);
+  }
+
+  /* With no photo beside it, the text uses the full width */
+  .hero__text:only-child {
+    grid-column: 1 / -1;
+  }
+
+  .hero__intro {
+    margin-top: var(--space-5);
+    color: var(--ink-2);
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+  }
+
+  @media (max-width: 899.98px) {
+    .hero__text,
+    .hero__photo {
+      grid-column: 1 / -1;
+    }
+
+    .hero__photo {
+      width: min(100%, 22rem);
+      justify-self: center;
+    }
+  }
+</style>

@@ -1,0 +1,232 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import VideoBlock from '../../components/VideoBlock.astro';
+import Diagram from '../../components/mdx/Diagram.astro';
+import { researchDocs, resolveVideo } from '../../lib/media';
+
+export const getStaticPaths = (async () => {
+  const research = await getCollection('research');
+  return research.map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
+}) satisfies GetStaticPaths;
+
+const { entry } = Astro.props;
+const r = entry.data;
+const { Content } = await render(entry);
+const folder = `/media/research/${r.slug}`;
+
+const d = researchDocs(r);
+const docs = [
+  { label: 'Paper', file: d.paper },
+  { label: 'Poster', file: d.poster },
+  { label: 'Slides', file: d.slides },
+].filter((x): x is { label: string; file: string } => Boolean(x.file));
+const hasVideo = Boolean(resolveVideo(r.video, folder, 'video.mp4'));
+---
+
+<BaseLayout title={r.title} description={r.summary} type="article">
+  <article>
+    <header class="page-head container">
+      <p class="label">{[r.typeLabel ?? r.type, r.years].filter(Boolean).join(' · ')}</p>
+      <h1>{r.title}</h1>
+      <dl class="meta">
+        <div>
+          <dt class="label">Institution</dt>
+          <dd class="meta__inst">{r.institution}</dd>
+        </div>
+        {
+          r.advisor && (
+            <div>
+              <dt class="label">Advisor</dt>
+              <dd>{r.advisor}</dd>
+            </div>
+          )
+        }
+        {
+          r.collaborators && r.collaborators.length > 0 && (
+            <div>
+              <dt class="label">Collaborators</dt>
+              <dd>{r.collaborators.join(', ')}</dd>
+            </div>
+          )
+        }
+        {
+          r.models && r.models.length > 0 && (
+            <div>
+              <dt class="label">Models</dt>
+              <dd>{r.models.join(' · ')}</dd>
+            </div>
+          )
+        }
+        {
+          r.tools && r.tools.length > 0 && (
+            <div>
+              <dt class="label">Tools</dt>
+              <dd>{r.tools.join(' · ')}</dd>
+            </div>
+          )
+        }
+        {
+          r.methods && r.methods.length > 0 && (
+            <div>
+              <dt class="label">Methods</dt>
+              <dd>{r.methods.join(' · ')}</dd>
+            </div>
+          )
+        }
+      </dl>
+      <ul class="chips meta__topics" role="list" aria-label="Research areas">
+        {(r.areas ?? r.topics).map((t) => <li class="chip">{t}</li>)}
+      </ul>
+    </header>
+
+    {/* Only shown when there is a paper, poster, slides or video; no empty frames */}
+    {(docs.length > 0 || hasVideo) && (
+    <section class="container documents" aria-labelledby="documents-title">
+      <h2 id="documents-title" class="visually-hidden">Documents</h2>
+      {
+        docs.length > 0 ? (
+          <ul class="docs" role="list">
+            {docs.map((doc) => (
+              <li class="docs__row">
+                <p class="docs__name">{doc.label} <span class="label">{doc.file.split('.').pop()}</span></p>
+                <p class="docs__actions label">
+                  <a href={doc.file}>View<span class="visually-hidden"> {doc.label.toLowerCase()}</span></a>
+                  <a href={doc.file} download>Download<span class="visually-hidden"> {doc.label.toLowerCase()}</span></a>
+                </p>
+              </li>
+            ))}
+          </ul>
+        ) : null
+      }
+
+      {
+        hasVideo && (
+          <div class="documents__video">
+            <VideoBlock
+              video={r.video}
+              folder={folder}
+              fileName="video.mp4"
+              title={`${r.title} presentation`}
+              placeholder="VIDEO COMING SOON"
+            />
+          </div>
+        )
+      }
+    </section>
+    )}
+
+    <div class="container">
+      <div class="rule" aria-hidden="true"></div>
+      <div class="prose research-body">
+        <Content components={{ Diagram }} />
+      </div>
+    </div>
+  </article>
+
+  <nav class="container back" aria-label="Research">
+    <div class="rule" aria-hidden="true"></div>
+    <p>
+      <a class="arrow-link" href="/research/"><span aria-hidden="true">&larr;</span> All research</a>
+    </p>
+  </nav>
+</BaseLayout>
+
+<style>
+  /* As many columns as there are details, up to four across */
+  .meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 0 var(--grid-gap);
+    margin-top: var(--space-6);
+    border-top: 1px solid var(--rule);
+  }
+
+  .meta > div {
+    display: grid;
+    gap: var(--space-1);
+    padding-block: var(--space-3);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .meta dd {
+    font-size: var(--fs-small);
+  }
+
+  .meta__inst {
+    color: var(--terra-text);
+  }
+
+  .meta__topics {
+    margin-top: var(--space-5);
+  }
+
+  .documents {
+    display: grid;
+    gap: var(--space-7);
+    padding-bottom: var(--section-pad);
+  }
+
+  .docs {
+    max-width: 44rem;
+    padding: var(--space-2) clamp(1.25rem, 0.9rem + 1.2vw, 2rem);
+    background: var(--paper);
+    border: 1px solid var(--rule);
+  }
+
+  .docs__row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-2) var(--space-5);
+    padding-block: var(--space-4);
+  }
+
+  .docs__row + .docs__row {
+    border-top: 1px solid var(--rule);
+  }
+
+  .docs__name {
+    font-family: var(--font-display);
+    font-size: var(--fs-h4);
+    font-weight: 350;
+  }
+
+  .docs__name .label {
+    margin-left: var(--space-2);
+  }
+
+  .docs__actions {
+    display: flex;
+    gap: var(--space-5);
+  }
+
+  .docs__placeholder {
+    width: min(100%, 18rem);
+  }
+
+  .documents__video {
+    max-width: 60rem;
+  }
+
+  .research-body {
+    margin-inline: auto;
+    padding-top: var(--space-7);
+  }
+
+  .back {
+    padding-block: var(--section-pad) var(--space-8);
+  }
+
+  .back p {
+    padding-top: var(--space-6);
+  }
+
+  @media (max-width: 767.98px) {
+    .meta {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

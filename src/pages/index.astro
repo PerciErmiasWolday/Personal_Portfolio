@@ -1,0 +1,133 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import Section from '../components/Section.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import ResearchCard from '../components/ResearchCard.astro';
+import ExperienceCard from '../components/ExperienceCard.astro';
+import LeadershipList from '../components/LeadershipList.astro';
+import AwardsList from '../components/AwardsList.astro';
+import { byOrder } from '../lib/content';
+
+const featured = (await getCollection('projects', (p) => p.data.featured)).sort(byOrder);
+const years = featured.map((p) => p.data.year);
+const range = years.length ? `${Math.min(...years)} to ${Math.max(...years)}` : '';
+
+const research = (await getCollection('research', (r) => r.data.featured)).sort(byOrder);
+const experience = (await getCollection('experience')).sort(byOrder);
+const leadership = (await getCollection('leadership')).sort(byOrder);
+const awards = (await getCollection('awards')).sort(byOrder);
+---
+
+<BaseLayout>
+  <Hero />
+
+  <Section id="experience" title="Work experience">
+    <ul class="experience-grid" role="list">
+      {
+        experience.map((entry) => (
+          <li>
+            <ExperienceCard entry={entry} />
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <Section id="research" title="Research">
+    <div class="research-grid">
+      {research.map((entry) => <ResearchCard entry={entry} />)}
+    </div>
+    <p class="section-more">
+      <a class="arrow-link" href="/research/">View all research <span class="arrow" aria-hidden="true">&rarr;</span></a>
+    </p>
+  </Section>
+
+  <Section id="work" title="Selected projects" label={`${featured.length} projects · ${range}`}>
+    <div class="work-grid">
+      {featured.map((project, i) => <ProjectCard project={project} index={i} />)}
+    </div>
+    <p class="section-more">
+      <a class="arrow-link" href="/projects/">View all projects <span class="arrow" aria-hidden="true">&rarr;</span></a>
+    </p>
+  </Section>
+
+  <Section id="leadership" title="Leadership & teaching">
+    <LeadershipList items={leadership} />
+  </Section>
+
+  <Section id="awards" title="Awards & honors">
+    <AwardsList items={awards} />
+  </Section>
+
+</BaseLayout>
+
+<style>
+  .experience-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--grid-gap);
+  }
+
+  /* Each card spans six shared rows so its parts line up with its neighbours */
+  .experience-grid > li {
+    display: grid;
+    grid-row: span 6;
+    grid-template-rows: subgrid;
+    row-gap: var(--space-3);
+  }
+
+  /* Two by two. No row gap because the cards share rows inside;
+     stacked cards are spaced with a margin instead. */
+  .work-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 var(--grid-gap);
+  }
+
+  .work-grid > :global(.pcard) {
+    margin-bottom: var(--grid-gap);
+  }
+
+  /* The cards' bottom margin already provides most of this gap */
+  .work-grid + :global(.section-more) {
+    margin-top: var(--space-2);
+  }
+
+  .research-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--grid-gap);
+  }
+
+  /* Three boxes across down to 860px, then one per row */
+  @media (max-width: 859.98px) {
+    .experience-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* Cards share rows inside; a row gap here would also open up every row
+     inside the cards, so stacked cards are spaced with a margin instead. */
+  .research-grid {
+    row-gap: 0;
+  }
+
+  /* Research: three boxes across down to 860px, then one per row */
+  @media (max-width: 859.98px) {
+    .research-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .research-grid > :global(.rcard) {
+      margin-bottom: var(--grid-gap);
+    }
+  }
+
+  @media (max-width: 859.98px) {
+    .work-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

@@ -1,0 +1,51 @@
+---
+import { site } from '../config/site';
+---
+
+<dl class="toolbox">
+  {
+    Object.entries(site.skills).map(([group, items]) => (
+      <div class="toolbox__row">
+        <dt class="label">{group}</dt>
+        <dd>
+          <ul class="chips" role="list">
+            {items.map((s) => (
+              <li class="chip">{s}</li>
+            ))}
+          </ul>
+        </dd>
+      </div>
+    ))
+  }
+</dl>
+
+<style>
+  .toolbox {
+    border-top: 1px solid var(--rule);
+  }
+
+  .toolbox__row {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--grid-gap);
+    row-gap: var(--space-3);
+    align-items: baseline;
+    padding-block: var(--space-4);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .toolbox__row dt {
+    grid-column: 1 / span 3;
+  }
+
+  .toolbox__row dd {
+    grid-column: 4 / -1;
+  }
+
+  @media (max-width: 767.98px) {
+    .toolbox__row dt,
+    .toolbox__row dd {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

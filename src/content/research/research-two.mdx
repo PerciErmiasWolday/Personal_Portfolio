@@ -1,0 +1,42 @@
+---
+title: "Classical-to-Quantum Machine Learning"
+slug: "research-two"
+typeLabel: "Machine Learning Research"
+years: "2026"
+institution: "University of Illinois Chicago"
+advisor: "Prof. Ian Mondragon Shem"
+topics: ["Neural Networks", "Quantum Simulation", "Scientific ML"]
+tools: ["Python", "PyTorch", "QuTiP", "scqubits", "NumPy", "SciPy"]
+summary: "I explored whether a neural network could learn relationships between classical system behavior and quantum expectation values. I used QuTiP and NumPy to generate simulation data and trained a neural network to predict quantum behavior from classical inputs. The interesting part was comparing what the model learned with the actual simulation results."
+whyItMatters: "Quantum simulations can be computationally expensive, especially for complex systems. Learning useful connections between classical and quantum dynamics could eventually make certain simulations more accessible."
+featured: true
+order: 2
+---
+
+## Abstract
+
+I worked on a research project exploring whether neural networks could use classical physics to predict quantum behavior. Using Python, I developed simulations of classical and quantum systems, generated paired trajectories, and trained neural networks to learn the relationship between them. I started with harmonic oscillators before moving to fluxonium, a superconducting circuit used in quantum computing. The goal was to understand whether machine learning could approximate complex quantum dynamics using simpler classical information.
+
+## Research question
+
+**Can a neural network predict quantum behavior from classical motion without repeatedly running expensive quantum simulations?**
+
+Classical and quantum systems describe physical behavior differently. I wanted to investigate whether their trajectories contain enough shared information for a neural network to learn a useful connection.
+
+## Method
+
+I used NumPy and SciPy to simulate classical dynamics and QuTiP and scqubits for quantum simulations. For the fluxonium experiments, I generated **200 paired trajectories, each containing 100 time points**, using corresponding initial conditions.
+
+I trained feed-forward neural networks in PyTorch using Adam optimization and mean squared error, then evaluated their predictions against simulated quantum expectation values.
+
+## Findings
+
+The experiments showed how challenging it is to learn a reliable classical-to-quantum mapping. Although the networks produced predictions, comparing their performance against simple baselines revealed that low prediction error alone doesn't establish that a model has learned the underlying physics.
+
+These results helped identify limitations in the initial approach and directions for improving the models and evaluation.
+
+## Why it matters
+
+Quantum simulations can be computationally expensive, especially for complex systems. Learning useful connections between classical and quantum dynamics could eventually make certain simulations more accessible.
+
+What I found most valuable was learning to question what a neural network has actually learned, rather than judging its success by prediction accuracy alone.

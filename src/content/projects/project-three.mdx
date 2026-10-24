@@ -1,0 +1,93 @@
+---
+title: "CallThread"
+slug: "project-three"
+category: "AI Call Intelligence & CRM Assistant"
+year: 2026
+topics: ["Speech Recognition", "NLP", "Business Automation"]
+summary: "I wanted to solve a familiar problem: useful details from calls often end up buried in recordings or forgotten in notes. I built an application that transcribes conversations, extracts customer details and follow-ups, and organizes everything into searchable CRM records. During an end-to-end test, a recorded call was successfully uploaded, transcribed, summarized, and saved, with the new information appearing in the application."
+role: "Creator & Full-Stack Developer"
+team: "Independent project"
+metrics: ["End-to-end upload verified", "Searchable CRM records"]
+stack: ["Python", "FastAPI", "React", "Whisper", "OpenAI API", "SQLite"]
+featured: true
+order: 1
+# Add a screenshot at src/assets/media/projects/project-three/cover.jpg (1600 x 900) to show it on the card.
+cover: "/media/projects/project-three/cover.jpg"
+coverAlt: "Screenshot of CallThread"
+# liveUrl: "https://..."   # shows a Live demo button
+codeUrl: "https://github.com/PerciErmiasWolday/AI-Meeting-Assistant"
+overview:
+  - "I wanted to solve a familiar problem: useful details from calls often end up buried in recordings or forgotten in notes. I built CallThread to turn conversations into transcripts, summaries, action items, and searchable customer records. Instead of keeping that information in separate places, I connected it through a CRM dashboard where users could review previous calls, find customer details, and follow up on what was discussed."
+# Screenshots are stills from the demo recording (0:10, 0:24, 1:13, 2:51).
+gallery:
+  - "/media/projects/project-three/gallery-1.jpg"
+  - "/media/projects/project-three/gallery-2.jpg"
+  - "/media/projects/project-three/gallery-3.jpg"
+  - "/media/projects/project-three/gallery-4.jpg"
+galleryAlt:
+  - "CallThread dashboard with call, follow-up, contact and opportunity counts, recent calls and Quick Ask AI"
+  - "CallThread Calls page with a processed meeting open on its transcript tab"
+  - "CallThread Contacts page listing customers with company, phone, last call, reason, AI summary, next step and status"
+  - "CallThread Ask AI page answering a natural-language question with matching customer records"
+galleryTitles:
+  - "Dashboard & Call Overview"
+  - "Call Details & Transcription"
+  - "CRM & Customer Records"
+  - "Ask AI"
+galleryCaptions:
+  - "An overview of processed calls, recent activity, and information retrieved from the backend."
+  - "A processed recording with its transcript, summary, important details, and follow-up actions."
+  - "Customer information extracted from conversations and organized into searchable records."
+  - "Natural-language search across previously saved call and customer information."
+
+---
+
+## Problem
+
+After a customer call, someone still has to go through the recording, write down what matters, update customer records, and remember what needs to happen next.
+
+I wanted to see how much of that process I could automate, while keeping the information organized and accessible when someone needed to revisit a conversation.
+
+## Approach
+
+I started with transcription and summarization, then realized that a summary alone wasn't enough. The useful information needed somewhere to go.
+
+I expanded the application into a CRM system that extracts customer names, call outcomes, key details, and follow-up tasks. I also added search and analytics so users could revisit conversations and identify information across different calls.
+
+One of my main design decisions was to connect these features to the same backend rather than building separate pages with disconnected data.
+
+## Architecture
+
+I built the frontend using React, Vite, and Tailwind CSS, with a Python/FastAPI backend handling the processing.
+
+When a user uploads a recording, the backend uses Whisper to transcribe the audio. The transcript is then summarized, and AI-assisted extraction identifies structured information such as customer details, call outcomes, and next steps.
+
+I used SQLAlchemy and SQLite to store processed meetings and their associated CRM records. The dashboard, Calls, CRM, Ask AI, and Analytics views retrieve information through the backend API, allowing the application to work with the same underlying records.
+
+The Ask AI feature also allows users to search saved customer information using natural-language questions.
+
+<Diagram src="/media/projects/project-three/architecture.png" alt="CallThread system architecture diagram. A React, Vite and TypeScript web app uploads call recordings to a Python FastAPI service, which validates the file and orchestrates a processing pipeline: Whisper speech-to-text, summarization, extraction of customer details, follow-ups and action items, and optional question answering. Results are stored in SQLite with SQLAlchemy as calls, transcripts, summaries, CRM records and action items, and shown in the Calls, CRM, dashboard and Ask AI pages." caption="React Frontend → FastAPI → Whisper & AI Processing → SQLite → CRM, Search & Analytics" />
+
+## Results
+
+I tested the complete recording-upload workflow, from submitting an audio file to seeing the processed call appear in the application.
+
+The recording was successfully transcribed, summarized, and saved. The new call appeared in the Calls page, with the transcript available for review.
+
+I also verified that the upload interface and navigation between the Calls and CRM pages worked correctly.
+
+**Verified outcomes**
+
+- End-to-end recording upload and processing
+- Searchable transcripts and customer records
+- Connected dashboard, CRM, and analytics views
+
+This was a functional prototype test, not a measured improvement in staff productivity or customer service.
+
+## What I learned
+
+One challenge I hadn't fully anticipated was that a transcription mistake could carry over into the customer record. A name that sounded close enough in a transcript could still be completely wrong for a CRM.
+
+I also learned that getting the AI output wasn't the end of the problem. I had to think about what happened when extraction failed, whether records were saved correctly, and how different parts of the application stayed consistent.
+
+It made me pay much more attention to data reliability, not just whether an AI feature appeared to work.

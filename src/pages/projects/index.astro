@@ -1,0 +1,153 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { byOrder, slugify } from '../../lib/content';
+
+const projects = (await getCollection('projects')).sort(byOrder);
+const categories = [...new Map(projects.map((p) => [slugify(p.data.category), p.data.category])).entries()];
+// Filters only help when some projects share a category.
+const showFilters = categories.length > 1 && categories.length < projects.length;
+---
+
+<BaseLayout title="Projects" description="Selected projects, with case studies, demos and code.">
+  <header class="page-head container">
+    <p class="label">{projects.length} projects</p>
+    <h1>Selected <span class="em">projects</span></h1>
+  </header>
+
+  <section class="section projects" aria-label="Project list">
+    <div class="container">
+      <div class="rule" aria-hidden="true"></div>
+
+      <!-- Hidden until the script runs, so without JS every project shows. -->
+      {showFilters && <div class="filters" data-filters hidden>
+        <p class="label" id="filter-label">Filter by category</p>
+        <ul class="filters__list" role="list" aria-labelledby="filter-label">
+          <li><button type="button" class="filter" data-filter="all" aria-pressed="true">All</button></li>
+          {
+            categories.map(([key, label]) => (
+              <li>
+                <button type="button" class="filter" data-filter={key} aria-pressed="false">
+                  {label}
+                </button>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="visually-hidden" role="status" aria-live="polite" data-filter-status></p>
+      </div>}
+
+      <ul class="projects__grid" role="list">
+        {
+          projects.map((project, i) => (
+            <li data-category={slugify(project.data.category)}>
+              <ProjectCard project={project} index={i} headingLevel="h2" />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-filters]');
+  const status = document.querySelector<HTMLElement>('[data-filter-status]');
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>('[data-filter]')];
+  const items = [...document.querySelectorAll<HTMLElement>('[data-category]')];
+
+  if (bar && status) {
+    bar.hidden = false;
+
+    const apply = (key: string) => {
+      let shown = 0;
+      for (const item of items) {
+        const match = key === 'all' || item.dataset.category === key;
+        item.hidden = !match;
+        if (match) shown++;
+      }
+      for (const b of buttons) b.setAttribute('aria-pressed', String(b.dataset.filter === key));
+      status.textContent = `Showing ${shown} of ${items.length} projects`;
+    };
+
+    for (const b of buttons) b.addEventListener('click', () => apply(b.dataset.filter ?? 'all'));
+  }
+</script>
+
+<style>
+  .projects {
+    padding-top: 0;
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-5);
+    margin-top: var(--space-6);
+  }
+
+  .filters[hidden] {
+    display: none;
+  }
+
+  .filters__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .filter {
+    min-height: 2.25rem;
+    padding: 0.4em 0.85em;
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    transition:
+      background-color var(--quick),
+      border-color var(--quick),
+      color var(--quick);
+  }
+
+  .filter:hover {
+    border-color: var(--ink);
+  }
+
+  .filter[aria-pressed='true'] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+
+  /* Two by two, like the home page. No row gap: each card spans eight shared
+     rows, and a gap would open up every one of them. */
+  .projects__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 var(--grid-gap);
+    margin-top: var(--space-7);
+  }
+
+  .projects__grid > li {
+    display: grid;
+    grid-row: span 8;
+    grid-template-rows: subgrid;
+    row-gap: 0;
+    margin-bottom: var(--grid-gap);
+  }
+
+  .projects__grid > li[hidden] {
+    display: none;
+  }
+
+  @media (max-width: 859.98px) {
+    .projects__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

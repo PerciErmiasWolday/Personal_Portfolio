@@ -1,0 +1,324 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PrintSheet from '../../components/PrintSheet.astro';
+import VideoBlock from '../../components/VideoBlock.astro';
+import Diagram from '../../components/mdx/Diagram.astro';
+import { byOrder } from '../../lib/content';
+import { resolveImage, resolveVideo } from '../../lib/media';
+
+export const getStaticPaths = (async () => {
+  const projects = (await getCollection('projects')).sort(byOrder);
+  return projects.map((entry, i) => ({
+    params: { slug: entry.data.slug },
+    props: {
+      entry,
+      prev: projects[i - 1] ?? projects[projects.length - 1],
+      next: projects[i + 1] ?? projects[0],
+    },
+  }));
+}) satisfies GetStaticPaths;
+
+const { entry, prev, next } = Astro.props;
+const p = entry.data;
+const { Content } = await render(entry);
+const folder = `/media/projects/${p.slug}`;
+const cover = resolveImage(p.cover);
+const gallery = (p.gallery ?? []).map((src, i) => ({
+  image: resolveImage(src),
+  alt: p.galleryAlt?.[i] ?? `${p.title}, screenshot ${i + 1}`,
+  title: p.galleryTitles?.[i],
+  caption: p.galleryCaptions?.[i],
+}));
+const showNav = prev.id !== entry.id;
+const hasVideo = Boolean(resolveVideo(p.video, folder, 'demo.mp4'));
+const facts = [
+  ['Role', p.role],
+  ['Team', p.team],
+  ['Duration', p.duration],
+].filter((f): f is [string, string] => Boolean(f[1]));
+---
+
+<BaseLayout title={p.title} description={p.summary} type="article" image={cover?.src}>
+  <article>
+    <header class="page-head container case-head">
+      <div class="case-head__main">
+        <p class="label">{p.category} · {p.year}</p>
+        <h1>{p.title}</h1>
+        {
+          p.overview?.length ? (
+            <div class="case-head__overview">
+              {p.overview.map((para) => (
+                <p class="lead">{para}</p>
+              ))}
+            </div>
+          ) : (
+            <p class="lead">{p.summary}</p>
+          )
+        }
+
+        <ul class="chips case-head__stack" role="list" aria-label="Stack">
+          {p.stack.map((s) => <li class="chip">{s}</li>)}
+        </ul>
+
+        {
+          (p.liveUrl || p.codeUrl) && (
+            <div class="case-head__actions">
+              {p.liveUrl && (
+                <a class="btn btn--primary" href={p.liveUrl} target="_blank" rel="noopener">
+                  Live demo <span aria-hidden="true">&nearr;</span>
+                  <span class="visually-hidden"> (opens in a new tab)</span>
+                </a>
+              )}
+              {p.codeUrl && (
+                <a class="btn btn--secondary" href={p.codeUrl} target="_blank" rel="noopener">
+                  View code <span aria-hidden="true">&nearr;</span>
+                  <span class="visually-hidden"> (opens in a new tab)</span>
+                </a>
+              )}
+            </div>
+          )
+        }
+      </div>
+
+      {
+        facts.length > 0 && (
+          <dl class="facts">
+            {facts.map(([label, value]) => (
+              <div>
+                <dt class="label">{label}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
+          </dl>
+        )
+      }
+    </header>
+
+    {
+      hasVideo && (
+        <div class="container case-video">
+          <VideoBlock
+            video={p.video}
+            folder={folder}
+            fileName="demo.mp4"
+            title={`${p.title} demo`}
+            placeholder="DEMO VIDEO COMING SOON"
+          />
+        </div>
+      )
+    }
+
+    <div class="container">
+      <div class="rule" aria-hidden="true"></div>
+      <div class="prose case-body">
+        <Content components={{ Diagram }} />
+      </div>
+    </div>
+
+    {
+      gallery.length > 0 && (
+        <section class="section case-gallery" aria-labelledby="gallery-title">
+          <div class="container">
+            <div class="rule" aria-hidden="true" />
+            <div class="section-head">
+              <h2 id="gallery-title">Screenshots</h2>
+            </div>
+            <ul class:list={['gallery', gallery.length === 3 && 'gallery--3']} role="list">
+              {gallery.map((g, i) => (
+                <li>
+                  <PrintSheet
+                    image={g.image}
+                    alt={g.alt}
+                    placeholder={`SCREENSHOT ${i + 1}, 16:10`}
+                    ratio="16 / 10"
+                    tilt={i % 2 === 0 ? 'left' : 'right'}
+                  />
+                  {(g.title || g.caption) && (
+                    <div class="gallery__text">
+                      {g.title && (
+                        <h3 class="gallery__title">
+                          <span class="label">{String(i + 1).padStart(2, '0')}</span> {g.title}
+                        </h3>
+                      )}
+                      {g.caption && <p class="gallery__caption">{g.caption}</p>}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )
+    }
+  </article>
+
+  {
+    showNav && (
+      <nav class="container case-nav" aria-label="More projects">
+        <div class="rule" aria-hidden="true" />
+        <div class="case-nav__inner">
+          <a class="case-nav__link" href={`/projects/${prev.data.slug}/`} rel="prev">
+            <span class="label">&larr; Previous</span>
+            <span class="case-nav__title">{prev.data.title}</span>
+          </a>
+          <a class="case-nav__link case-nav__link--next" href={`/projects/${next.data.slug}/`} rel="next">
+            <span class="label">Next &rarr;</span>
+            <span class="case-nav__title">{next.data.title}</span>
+          </a>
+        </div>
+      </nav>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .case-head__overview {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .gallery.gallery--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .gallery__text {
+    margin-top: var(--space-5);
+  }
+
+  .gallery__title {
+    font-size: var(--fs-body);
+    font-weight: 400;
+    line-height: 1.35;
+  }
+
+  .gallery__title .label {
+    margin-right: 0.4em;
+    color: var(--terra-text);
+  }
+
+  .gallery__caption {
+    margin-top: var(--space-1);
+    font-size: var(--fs-small);
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 1023.98px) {
+    .gallery.gallery--3 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .case-head {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--grid-gap);
+    row-gap: var(--space-7);
+    align-items: end;
+  }
+
+  .case-head__main {
+    grid-column: 1 / span 8;
+  }
+
+  .case-head__stack {
+    margin-top: var(--space-5);
+  }
+
+  .case-head__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+  }
+
+  .facts {
+    grid-column: 10 / span 3;
+    border-top: 1px solid var(--rule);
+  }
+
+  .facts > div {
+    display: grid;
+    gap: var(--space-1);
+    padding-block: var(--space-3);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .facts dd {
+    font-size: var(--fs-small);
+  }
+
+  .case-video {
+    padding-bottom: var(--section-pad);
+  }
+
+  .case-video :global(.video) {
+    max-width: 60rem;
+    margin-inline: auto;
+  }
+
+  .case-body {
+    margin-inline: auto;
+    padding-block: var(--space-7) 0;
+  }
+
+  .case-gallery {
+    padding-bottom: 0;
+  }
+
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-7) var(--grid-gap);
+  }
+
+  .case-nav {
+    padding-block: var(--section-pad) var(--space-8);
+  }
+
+  .case-nav__inner {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--grid-gap);
+    padding-top: var(--space-6);
+  }
+
+  .case-nav__link {
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .case-nav__link--next {
+    text-align: right;
+  }
+
+  .case-nav__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-h4);
+    font-weight: 350;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    transition: color var(--quick);
+  }
+
+  .case-nav__link:hover .case-nav__title {
+    color: var(--terra-text);
+  }
+
+  @media (max-width: 899.98px) {
+    .case-head__main,
+    .facts {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .gallery,
+    .gallery.gallery--3 {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
