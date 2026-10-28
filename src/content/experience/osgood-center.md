@@ -1,5 +1,5 @@
 ---
-role: "Computer Science Researcher"
+role: "Computer Science Intern"
 organization: "Osgood Center for International Studies"
 category: "AI Policy Research"
 start: "Jun 2025"
