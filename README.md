@@ -28,11 +28,10 @@ src/
   assets/               Images (optimized at build time)
   components/           Header, cards, print sheet, video, timeline, ...
   layouts/              Base layout with SEO tags
-  pages/                Routes: /, /projects, /research, /about, /resume, 404
+  pages/                Routes: /, /projects, /research, /about, 404
   styles/global.css     Design tokens and base styles
 public/
   media/                Videos, captions and PDFs
-  Perci-Wolday-Resume.pdf
 ```
 
 ## Deploy

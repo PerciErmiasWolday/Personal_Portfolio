@@ -35,7 +35,7 @@ export const site = {
     "I'm studying Computer Science and Mathematics at UIC, graduating in May 2027. My work spans software engineering, machine learning, and AI evaluation, from building payment systems to researching how AI behaves in different situations.",
   // Second hero paragraph: why you build what you build.
   story:
-    'I’ve worked with payment systems data at a Chicago startup and researched how machine learning models behave. Some of my most meaningful work has come from problems I’ve seen people face firsthand, like ReadingBridge, a tool I built to help autistic children better understand the context behind stories. The projects look different, but what draws me to each of them is the same: figuring out how things work, noticing where they fall short, and finding ways to make them better.',
+    'Some of my most meaningful work has come from problems I’ve seen people face firsthand, like ReadingBridge, a tool I built to help autistic children better understand the context behind stories. The projects look different, but what draws me to each of them is the same: figuring out how things work, noticing where they fall short, and finding ways to make them better.',
 
   email: 'perciwolday2@gmail.com',
 
@@ -44,8 +44,6 @@ export const site = {
   // Also show the portrait beside the home page introduction (the text then shares the width).
   showPhotoInHero: false,
   photoAlt: 'Perci Wolday standing beside the research poster “Legible Uncertainty-Aware Robot Motion for Human-Shared Spaces”',
-
-  resumePdf: '/Perci-Wolday-Resume.pdf',
 
   social: [
     { label: 'GitHub', url: 'https://github.com/PerciErmiasWolday', icon: 'github' },
@@ -61,7 +59,7 @@ export const site = {
     note: "I really enjoy meeting people and hearing what they're working on. If you have a question about something I've done, an opportunity you think I'd be a good fit for, or just want to say hello, I'd be happy to hear from you.",
   },
 
-  // Shown on /about and /resume. The school is the heading.
+  // Shown on /about. The school is the heading.
   education: [
     {
       school: 'University of Illinois Chicago',
@@ -76,7 +74,7 @@ export const site = {
     },
   ] as { school: string; degree: string; years?: string; detail?: string }[],
 
-  // Skills grouped by category, shown as mono chips on /about and /resume.
+  // Skills grouped by category, shown as mono chips on /about.
   // Every item comes from your experience, project and research write-ups.
   skills: {
     Languages: ['Python', 'TypeScript', 'SQL', 'C#'],

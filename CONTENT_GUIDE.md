@@ -14,7 +14,6 @@ code comment in `src/config/site.ts`.
 | --- | --- | --- |
 | Images (portrait, covers, screenshots, diagrams, video posters) | `src/assets/` | Astro resizes and optimizes them |
 | Videos, captions, PDFs | `public/media/` | Served as-is |
-| Resume PDF | `public/Perci-Wolday-Resume.pdf` | Linked from the header and /resume |
 | Text content | `src/content/` | One Markdown/MDX file per entry |
 | Site settings | `src/config/site.ts` | Name, intro, email, links, skills |
 
@@ -24,8 +23,7 @@ placeholder sheet (or hides the link) until the file exists.
 ## Update site settings
 
 Open `src/config/site.ts`. It holds your name (the hero says "Hey, I'm
-{firstName}."), the hero `tagline` and `intro`, the "seeking" line (shown on
-/resume), the spec list (focus, location, education, status), email,
+{firstName}."), the hero `tagline` and `intro`, the spec list (focus, location, education, status), email,
 social links, the story pull-quote, contact line, education, skills and
 interests. Also set `url` to your real domain: canonical URLs, Open Graph tags
 and the sitemap use it.
@@ -190,7 +188,7 @@ order: 1                       # lower comes first
 Your paragraph, in your own words.
 ```
 
-The home page, /about and /resume all show these rows.
+The home page and /about show these rows.
 
 ## Add leadership or teaching
 
@@ -224,9 +222,3 @@ order: 1
 
 Your story on /about is `src/content/about/story.mdx`. Plain Markdown works.
 longer shows a pull-quote.
-
-## Replace the resume
-
-Replace `public/Perci-Wolday-Resume.pdf` with your real resume (same file name). The
-education, experience and skills on the /resume page come from
-`src/config/site.ts` and the experience collection, so keep them in sync.
