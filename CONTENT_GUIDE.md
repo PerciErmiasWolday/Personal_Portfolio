@@ -175,7 +175,7 @@ frontmatter is the description, shown exactly as written (`**bold**` works).
 ```md
 ---
 role: "Engineering Intern"
-organization: "Kadeya"
+organization: "Example Company"
 location: "Chicago, IL"        # optional
 start: "2025"
 end: "Present"                 # optional; leave out for a single period like "Summer 2025"
